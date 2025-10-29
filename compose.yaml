@@ -19,7 +19,7 @@ services:
 
   api:
     build: back/
-    image: potapchuk22/pd421_back
+    image: frasp/back
     container_name: api
     environment:
       - ConnectionStrings__DefaultDb=User ID=postgres;Password=qwerty;Host=db;Port=5432;Database=pd421_games_store;
@@ -35,7 +35,7 @@ services:
 
   front:
     build: front/
-    image: potapchuk22/pd421_front
+    image: frasp/front
     container_name: front
     depends_on:
       - api
