@@ -34,7 +34,10 @@ services:
       - pd421_gameshop
 
   front:
-    build: front/
+    build: 
+      context:front/
+    args:
+      - VITE_API_BASE_URL=
     image: frasp/front
     container_name: front
     depends_on:
