@@ -22,30 +22,29 @@ services:
     image: frasp/back
     container_name: api
     environment:
-      - ConnectionStrings__DefaultDb=User ID=postgres;Password=qwerty;Host=db;Port=5432;Database=pd421_games_store;
+      - ConnectionStrings__DefaultDb=User ID=postgres;Password=2010;Host=db;Port=5432;Database=pd421_games_store;
     depends_on:
       db:
         condition: service_healthy
     ports:
-      - "5000:8080"
+      - "5173:8080"
     volumes:
       - api:/app/storage
     networks:
       - pd421_gameshop
 
   front:
-    build: 
-      context: front/
-      args:
-        - VITE_API_BASE_URL=
-    image: frasp/front
+    build: front/
+    image: frasp/front:v1.0
     container_name: front
     depends_on:
       - api
     ports:
-      - "80:5173"
+      - "80:8080"
     networks:
       - pd421_gameshop
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5173/api
 
 networks:
   pd421_gameshop:
