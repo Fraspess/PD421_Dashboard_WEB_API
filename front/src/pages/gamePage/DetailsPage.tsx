@@ -20,10 +20,10 @@ const DetailsPage = () => {
               <Box sx={{height:"50px"}}>
                 <Typography variant="h4">{game.name}</Typography>
               </Box>
-                <img src={`${imagesUrl}/${game.mainImage?.imagePath}`} alt={game.name} style={{width: '70%', height: '40%', borderRadius: '8px'}} />
+                <img src={`${imagesUrl}/${game.mainImage ? game.mainImage.imagePath : "default.png"} `} alt={game.name} style={{width: '70%', height: '40%', borderRadius: '8px'}} />
                 <Box sx={{display:"flex", flexDirection:"row"}}>
                     {game.images && game.images.map((img, index) => (
-                        <img key={index} src={`${imagesUrl}/${img.imagePath ? img.imagePath : "default.png"}`} alt={`${game.name} ${index}`} style={{width: '20%', height: '60%', borderRadius: '8px'}} />
+                        <img key={index} src={`${imagesUrl}/${img.imagePath}`} alt={`${game.name} ${index}`} style={{width: '20%', height: '60%', borderRadius: '8px'}} />
                     ))}
                 </Box>
                 
