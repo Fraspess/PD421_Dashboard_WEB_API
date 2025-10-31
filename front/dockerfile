@@ -8,6 +8,12 @@ RUN npm install
 
 COPY . .
 
+ARG API_URL
+ARG IMAGES_URL
+
+ENV VITE_API_BASE_URL=$API_URL
+ENV VITE_IMAGES_URL=$IMAGES_URL
+
 EXPOSE 8080
 
 CMD [ "npm", "run", "dev" ]
