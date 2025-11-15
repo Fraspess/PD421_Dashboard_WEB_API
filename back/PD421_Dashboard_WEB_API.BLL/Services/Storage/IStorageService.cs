@@ -9,8 +9,10 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Storage
 {
     public interface IStorageService
     {
-        Task<string?> SaveImageAsync(IFormFile file, string folderPath);
+        Task<string?> SaveImageAsync(IFormFile file, string storagePath);
         Task<IEnumerable<string>> SaveImagesAsync(IEnumerable<IFormFile> files, string folderPath);
-        Task DeleteImageAsync(string folderPath);
+        Task DeleteImageAsync(string containerName,string imagesPath);
+        Task DeleteImageContainer(string containerName);
+        public bool IsExists(string containerName, string filePath);
     }
 }

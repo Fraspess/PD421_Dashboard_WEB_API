@@ -49,9 +49,7 @@ namespace PD421_Dashboard_WEB_API.Controllers
                 };
                 return this.ToActionResult(validResponse);
             }
-            string rootPath = _environment.ContentRootPath;
-            string imagesPath = Path.Combine(rootPath, StaticFilesSettings.StorageDirectory, StaticFilesSettings.ImagesDirectory);
-            var response = await _gameService.DeleteGameAsync(id,imagesPath);
+            var response = await _gameService.DeleteGameAsync(id);
             return this.ToActionResult(response);
         }
 

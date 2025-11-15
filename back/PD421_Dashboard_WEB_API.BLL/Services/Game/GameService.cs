@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PD421_Dashboard_WEB_API.BLL.Dtos.Game;
+using PD421_Dashboard_WEB_API.BLL.Services.BlobStorage;
 using PD421_Dashboard_WEB_API.BLL.Services.Storage;
 using PD421_Dashboard_WEB_API.DAL.Entitites;
 using PD421_Dashboard_WEB_API.DAL.Repositories.Game;
@@ -24,27 +26,22 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
             _storageService = storageService;
         }
 
-        public async Task<ServiceResponse> CreateGameAsync(CreateGameDto dto,string imagesPath)
+        public async Task<ServiceResponse> CreateGameAsync(CreateGameDto dto, string storagePath)
         {
+
+            // отримуємо жанри
             var genres = await _gameRepository.GetGenresByIdsAsync(dto.GenreIds);
-            //var entity = new GameEntity()
-            //{
-            //    Name = dto.Name,
-            //    Description = dto.Description,
-            //    Price = dto.Price,
-            //    ReleaseDate = dto.ReleaseDate,
-            //    Publisher = dto.Publisher,
-            //    Developer = dto.Developer,
-            //    Genres = genres,
-            //};
+
+            // мапимо dto в entity і даємо їй жанри
             var entity = _mapper.Map<GameEntity>(dto);
             entity.Genres = genres;
-            string gamePath = Path.Combine(imagesPath, entity.Id);
-            Directory.CreateDirectory(gamePath);
 
-            // Save main image
-            var mainImageName = await _storageService.SaveImageAsync(dto.MainImage, gamePath);
+            // створюємо папку для збереження зображень гри
+            string folderName = entity.Id.ToLower();
+            // зберігаємо головне зображення
+            var mainImageName = await _storageService.SaveImageAsync(dto.MainImage,storagePath);
 
+            // перевіряємо чи збереження пройшло успішно
             if (mainImageName == null)
             {
                 return new ServiceResponse
@@ -65,16 +62,18 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
 
             entity.Images.Add(mainImage);
 
-            // Save images
-            var imageNames = await _storageService.SaveImagesAsync(dto.Images, gamePath);
+            // Зберігаємо зображення
+            var imageNames = await _storageService.SaveImagesAsync(dto.Images, folderName);
+
 
             if (imageNames.Count() > 0)
             {
+                // ???
                 var images = imageNames.Select(name => new GameImageEntity
                 {
                     GameId = entity.Id,
                     IsMain = false,
-                    ImagePath = Path.Combine(entity.Id, name)
+                    ImagePath = Path.Combine(entity.Id, name.ToLower())
                 });
 
                 foreach (var i in images)
@@ -82,8 +81,8 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
                     entity.Images.Add(i);
                 }
             }
-
             await _gameRepository.CreateAsync(entity);
+
             return new ServiceResponse
             {
                 Message = "Гру успішно створено",
@@ -92,17 +91,17 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
             };
         }
 
-        public async Task<ServiceResponse> DeleteGameAsync(string id,string imagesPath)
+        public async Task<ServiceResponse> DeleteGameAsync(string id)
         {
-            var game = await _gameRepository.GetByIdAsync(id);
-            if(game != null)
+            var game = await _gameRepository.GetByIdAsync(id.ToLower());
+            if (game != null)
             {
-                string fullImagesFolderPath = Path.Combine(imagesPath,game.Id);
-                await _storageService.DeleteImageAsync(fullImagesFolderPath);
+                // передаємо айди як контейнер того що назва контейнера = айди гри
+                await _storageService.DeleteImageContainer(id.ToLower());
                 await _gameRepository.DeleteAsync(game);
                 return new ServiceResponse { Message = "Гру успішно видалено", IsSuccess = true };
             }
-            return new ServiceResponse { Message = "Гру не знайдено", IsSuccess = false , HttpStatusCode = HttpStatusCode.BadRequest};
+            return new ServiceResponse { Message = "Гру не знайдено", IsSuccess = false, HttpStatusCode = HttpStatusCode.BadRequest };
         }
 
         public async Task<ServiceResponse> GetAllGamesAsync()
@@ -121,8 +120,8 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
 
         public async Task<ServiceResponse> GetGameByIdAsync(string id)
         {
-            var game = await _gameRepository.GetByIdAsync(id);
-            if(game != null)
+            var game = await _gameRepository.GetByIdAsync(id.ToLower());
+            if (game != null)
             {
                 return new ServiceResponse
                 {
@@ -155,55 +154,35 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
 
         public async Task<ServiceResponse> UpdateGameAsync(UpdateGameDto dto, string imagesPath)
         {
-            var entity = await _gameRepository.GetByIdAsync(dto.Id);
+            var entity = await _gameRepository.GetByIdAsync(dto.Id.ToLower());
             if (entity == null)
             {
                 return new ServiceResponse
                 {
-                    Message = $"Гру з id '{dto.Id}' не знайдено",
+                    Message = $"Гру з id '{dto.Id.ToLower()}' не знайдено",
                     IsSuccess = false,
                     HttpStatusCode = HttpStatusCode.BadRequest
                 };
             }
-            entity = _mapper.Map(dto, entity);
 
-            string gamePath = Path.Combine(imagesPath, entity.Id);
-            Directory.CreateDirectory(gamePath);
+            _mapper.Map(dto, entity);
 
-            // Save main image
-            if(dto.MainImage != null)
+            if (dto.MainImage != null)
             {
-            var mainImageName = await _storageService.SaveImageAsync(dto.MainImage!, gamePath);
-
-            var mainImage = new GameImageEntity
-            {
-                GameId = entity.Id,
-                ImagePath = Path.Combine(entity.Id, mainImageName),
-                IsMain = true
-            };
-            entity.Images.Add(mainImage);
-            }
-
-
-            // Save images
-            var imageNames = await _storageService.SaveImagesAsync(dto.Images, gamePath);
-
-            if (imageNames.Count() > 0)
-            {
-                var images = imageNames.Select(name => new GameImageEntity
+                var currentMain = entity.Images.FirstOrDefault(i => i.IsMain);
+                if (currentMain != null)
                 {
-                    GameId = entity.Id,
-                    IsMain = false,
-                    ImagePath = Path.Combine(entity.Id, name)
-                });
-
-                foreach (var i in images)
-                {
-                    entity.Images.Add(i);
+                    await _storageService.DeleteImageAsync(dto.Id.ToLower(), imagesPath);
+                    entity.Images.Remove(currentMain);
                 }
+                var mainImagePath = await _storageService.SaveImageAsync(dto.MainImage, dto.Id.ToLower());
+                entity.Images.Add(new GameImageEntity { GameId = entity.Id, ImagePath = mainImagePath!, IsMain = true });
             }
+
+            await _storageService.SaveImagesAsync(dto.Images, imagesPath.ToLower());
 
             await _gameRepository.UpdateAsync(entity);
+            
             return new ServiceResponse
             {
                 Message = "Гру успішно оновлено",
@@ -211,6 +190,48 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
                 HttpStatusCode = HttpStatusCode.OK
             };
 
+
+            // путь до збереження зображень
+            //string gamePath = Path.Combine(imagesPath, entity.Id);
+            //Directory.CreateDirectory(gamePath);
+
+            //// Save main image
+            //if(dto.MainImage != null)
+            //{
+            //    var mainImageName = await _storageService.SaveImageAsync(dto.MainImage!, gamePath);
+
+            //    var mainImage = new GameImageEntity
+            //    {
+            //        GameId = entity.Id,
+            //        ImagePath = Path.Combine(entity.Id, mainImageName),
+            //        IsMain = true
+            //    };
+            //     entity.Images.Add(mainImage);
+            //}
+
+
+
+
+            // Save images
+            //var imageNames = await _storageService.SaveImagesAsync(dto.Images, gamePath);
+
+            //if (imageNames.Count() > 0)
+            //{
+            //    var images = imageNames.Select(name => new GameImageEntity
+            //    {
+            //        GameId = entityMap.Id,
+            //        IsMain = false,
+            //        ImagePath = Path.Combine(entity.Id, name)
+            //    });
+
+            //    foreach (var i in images)
+            //    {
+            //        entity.Images.Add(i);
+            //    }
         }
-    }
+
+    };
+
 }
+    
+

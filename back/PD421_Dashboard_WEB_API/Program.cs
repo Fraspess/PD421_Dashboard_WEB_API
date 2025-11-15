@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PD421_Dashboard_WEB_API.BLL.Services.Auth;
+using PD421_Dashboard_WEB_API.BLL.Services.BlobStorage;
 using PD421_Dashboard_WEB_API.BLL.Services.Game;
 using PD421_Dashboard_WEB_API.BLL.Services.Genre;
 using PD421_Dashboard_WEB_API.BLL.Services.Register;
@@ -59,6 +60,12 @@ builder.Services.AddScoped<IGenreService, GenreService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    string connectionString = configuration.GetConnectionString("BlobStorage");
+    return new BlobStorageService(connectionString);
+});
 builder.Services.AddScoped<IRegisterService, RegisterService>();
 // Add settings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
