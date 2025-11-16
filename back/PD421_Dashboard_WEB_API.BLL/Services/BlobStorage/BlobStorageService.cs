@@ -36,14 +36,6 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.BlobStorage
             await blob.UploadAsync(fileStream, overwrite: true);
         }
 
-        public async Task DownloadFileAsync(string containerName, string destFilePath, string srcFilePath)
-        {
-            var containerClient = await GetContainerClientAsync(containerName);
-            var blob = containerClient.GetBlobClient(srcFilePath);
-
-            await blob.DownloadToAsync(destFilePath);
-        }
-
         public async Task DeleteFileAsync(string containerName, string filePath)
         {
             var containerClient = await GetContainerClientAsync(containerName);
@@ -51,34 +43,6 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.BlobStorage
             await blob.DeleteIfExistsAsync();
         }
 
-        public bool IsContainerExists(string containerName)
-        {
-            var containerClient = _serviceClient.GetBlobContainerClient(containerName);
-            Response<bool> existsResponse = containerClient.Exists();
-            return existsResponse.Value;
-        }
-
-        public bool IsFileExists(string containerName, string filePath)
-        {
-            var containerClient = _serviceClient.GetBlobContainerClient(containerName);
-            var blob = containerClient.GetBlobClient(filePath);
-            Response<bool> existsResponse = blob.Exists();
-            return existsResponse.Value;
-        }
-
-        public async Task DeleteBlobContainer(string containerName)
-        {
-            try
-            {
-                var containerClient = _serviceClient.GetBlobContainerClient(containerName);
-                await containerClient.DeleteIfExistsAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
-        }
 
         public async Task<string> GetUrlByFileName(string containerName, string filePath)
         {

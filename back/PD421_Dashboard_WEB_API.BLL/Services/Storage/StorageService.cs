@@ -51,10 +51,6 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Storage
             await _blobStorageService.DeleteFileAsync(StaticFilesSettings.ImagesContainerName,imagePath);
         }
 
-        public bool IsExists(string containerName, string filePath)
-        {
-            return _blobStorageService.IsFileExists(containerName, filePath);
-        }
 
         public async Task<string> GetImageUrlByFileName(string imageName)
         {
