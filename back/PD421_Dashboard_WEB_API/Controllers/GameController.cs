@@ -22,18 +22,18 @@ namespace PD421_Dashboard_WEB_API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateGameAsync([FromForm] CreateGameDto dto)
         {
-            string rootPath = _environment.ContentRootPath;
-            string imagesPath = Path.Combine(rootPath, StaticFilesSettings.StorageDirectory, StaticFilesSettings.ImagesDirectory);
             dto.ReleaseDate = dto.ReleaseDate.ToUniversalTime();
-            var response = await _gameService.CreateGameAsync(dto, imagesPath);
+            var response = await _gameService.CreateGameAsync(dto);
             return this.ToActionResult(response);
+
         }
         [HttpPut]
         public async Task<IActionResult> UpdateGameAsync([FromForm] UpdateGameDto dto)
         {
-            string rootPath = _environment.ContentRootPath;
-            string imagesPath = Path.Combine(rootPath, StaticFilesSettings.StorageDirectory, StaticFilesSettings.ImagesDirectory);
-            var response = await _gameService.UpdateGameAsync(dto,imagesPath);
+
+            //var response = await _gameService.UpdateGameAsync(dto);
+            //return this.ToActionResult(response);
+            var response = new ServiceResponse { Message = "D", IsSuccess = false, HttpStatusCode = HttpStatusCode.NotFound };
             return this.ToActionResult(response);
         }
         [HttpDelete]
@@ -49,9 +49,8 @@ namespace PD421_Dashboard_WEB_API.Controllers
                 };
                 return this.ToActionResult(validResponse);
             }
-            string rootPath = _environment.ContentRootPath;
-            string imagesPath = Path.Combine(rootPath, StaticFilesSettings.StorageDirectory, StaticFilesSettings.ImagesDirectory);
-            var response = await _gameService.DeleteGameAsync(id,imagesPath);
+
+            var response = await _gameService.DeleteGameAsync(id);
             return this.ToActionResult(response);
         }
 
@@ -84,7 +83,7 @@ namespace PD421_Dashboard_WEB_API.Controllers
         [Route("byGenre")]
         public async Task<IActionResult> GetGameByGenre(string? genreName)
         {
-            if(String.IsNullOrEmpty(genreName))
+            if (String.IsNullOrEmpty(genreName))
             {
                 var validResponse = new ServiceResponse
                 {
@@ -97,5 +96,18 @@ namespace PD421_Dashboard_WEB_API.Controllers
             var response = await _gameService.GetGamesByGenreAsync(genreName);
             return this.ToActionResult(response);
         }
+
+        [HttpGet]
+        [Route("image/ByFileName")]
+        public async Task<IActionResult> GetImageUrlByFileName(string? fileName)
+        {
+            if (String.IsNullOrEmpty(fileName))
+            {
+                var responseV = new ServiceResponse { Message = "Назва картинки не вказана!", IsSuccess = false, HttpStatusCode = HttpStatusCode.BadRequest };
+                return this.ToActionResult(responseV);
+            }
+            var response = await _gameService.GetImageUrlByFileName(fileName);
+            return this.ToActionResult(response);
+        }
     }
-}
+    }
