@@ -98,15 +98,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors(corsName);
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseCors(corsName);
 
-string rootPath = app.Environment.ContentRootPath;
-string storagePath = Path.Combine(rootPath, "storage");
-string imagesPath = Path.Combine(storagePath, "images");
+//string rootPath = app.Environment.ContentRootPath;
+//string storagePath = Path.Combine(rootPath, "storage");
+//string imagesPath = Path.Combine(storagePath, "images");
 
 //app.AddStaticFiles(app.Environment);
 app.Seed();

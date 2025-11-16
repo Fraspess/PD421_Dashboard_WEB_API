@@ -42,6 +42,7 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
 
 
             // Save main image
+            Console.WriteLine("IODASDDFSSFD :: " + entity.Id);
             var mainImageName = await _storageService.SaveImageAsync(dto.MainImage, entity.Id);
 
             if (mainImageName == null)
