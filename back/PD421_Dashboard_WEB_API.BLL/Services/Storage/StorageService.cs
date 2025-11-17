@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using PD421_Dashboard_WEB_API.BLL.Services.BlobStorage;
+using PD421_Dashboard_WEB_API.BLL.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,12 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Storage
 {
     public class StorageService : IStorageService
     {
-        public async Task<string?> SaveImageAsync(IFormFile file, string folderPath)
+        private readonly IBlobStorageService _blobStorageService;
+        public StorageService(IBlobStorageService blobStorageService)
+        {
+            _blobStorageService = blobStorageService;
+        }
+        public async Task<string?> SaveImageAsync(IFormFile file, string gameId)
         {
             try
             {
@@ -21,14 +28,10 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Storage
 
                 string extension = Path.GetExtension(file.FileName);
                 string imageName = $"{Guid.NewGuid()}{extension}";
-                string imagePath = Path.Combine(folderPath, imageName);
-
-                using (var stream = File.Create(imagePath))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
+                string imagePath = Path.Combine(gameId, imageName);
+                await _blobStorageService.UploadFileAsync(StaticFilesSettings.ImagesContainerName,imagePath,file);
                 return imageName;
+            
             }
             catch (Exception)
             {
@@ -36,29 +39,18 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Storage
             }
         }
 
-        public async Task<IEnumerable<string>> SaveImagesAsync(IEnumerable<IFormFile> files, string folderPath)
+        public async Task<IEnumerable<string>> SaveImagesAsync(IEnumerable<IFormFile> files, string gameId)
         {
-            var tasks = files.Select(file => SaveImageAsync(file, folderPath));
+            var tasks = files.Select(file => SaveImageAsync(file, gameId));
             var results = await Task.WhenAll(tasks);
             return results.Where(res => res != null)!;
         }
 
         public async Task DeleteImageAsync(string imagePath)
         {
-            if(Directory.Exists(imagePath))
-            {
-                try
-                {
-                    await Task.Run(() =>
-                    {
-                        Directory.Delete(imagePath,true);
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
+            await _blobStorageService.DeleteFileAsync(StaticFilesSettings.ImagesContainerName,imagePath);
         }
+
+
     }
 }

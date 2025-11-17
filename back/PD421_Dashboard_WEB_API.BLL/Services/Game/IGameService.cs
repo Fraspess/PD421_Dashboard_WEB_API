@@ -9,9 +9,9 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
 {
     public interface IGameService
     {
-        Task<ServiceResponse> CreateGameAsync(CreateGameDto dto, string imagesPath);
-        Task<ServiceResponse> UpdateGameAsync(UpdateGameDto dto, string imagesPath);
-        Task<ServiceResponse> DeleteGameAsync(string id,string imagesPath);
+        Task<ServiceResponse> CreateGameAsync(CreateGameDto dto);
+        Task<ServiceResponse> UpdateGameAsync(UpdateGameDto dto);
+        Task<ServiceResponse> DeleteGameAsync(string id);
         Task<ServiceResponse>? GetGameByIdAsync(string id);
         Task<ServiceResponse> GetAllGamesAsync();
         Task<ServiceResponse> GetGamesByGenreAsync(string genreName);

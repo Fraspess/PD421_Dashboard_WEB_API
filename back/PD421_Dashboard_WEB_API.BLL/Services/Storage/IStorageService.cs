@@ -9,8 +9,8 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Storage
 {
     public interface IStorageService
     {
-        Task<string?> SaveImageAsync(IFormFile file, string folderPath);
-        Task<IEnumerable<string>> SaveImagesAsync(IEnumerable<IFormFile> files, string folderPath);
-        Task DeleteImageAsync(string folderPath);
+        Task<string?> SaveImageAsync(IFormFile file, string gameId);
+        Task<IEnumerable<string>> SaveImagesAsync(IEnumerable<IFormFile> files, string gameId);
+        Task DeleteImageAsync(string imagePath);
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PD421_Dashboard_WEB_API.BLL.Services.Auth;
+using PD421_Dashboard_WEB_API.BLL.Services.BlobStorage;
 using PD421_Dashboard_WEB_API.BLL.Services.Game;
 using PD421_Dashboard_WEB_API.BLL.Services.Genre;
 using PD421_Dashboard_WEB_API.BLL.Services.Register;
@@ -60,6 +61,13 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IRegisterService, RegisterService>();
+builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    string connectionString = configuration.GetConnectionString("BlobStorage");
+    return new BlobStorageService(connectionString);
+});
 // Add settings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddSingleton(sp =>
@@ -90,17 +98,17 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors(corsName);
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseCors(corsName);
 
-string rootPath = app.Environment.ContentRootPath;
-string storagePath = Path.Combine(rootPath, "storage");
-string imagesPath = Path.Combine(storagePath, "images");
+//string rootPath = app.Environment.ContentRootPath;
+//string storagePath = Path.Combine(rootPath, "storage");
+//string imagesPath = Path.Combine(storagePath, "images");
 
-app.AddStaticFiles(app.Environment);
+//app.AddStaticFiles(app.Environment);
 app.Seed();
 
 app.Run();

@@ -17,10 +17,11 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
                 <CardMedia
                     component="img"
                     height="140"
-                    image={`${imagesUrl}/${game.mainImage
-                            ? game.mainImage.imagePath
-                            : "default.png"
-                        }`}
+                    image={`${game.mainImage && game.mainImage.imagePath
+                            ? imagesUrl + game.mainImage.imagePath
+                            : `${imagesUrl}default.png`
+                    }
+                        `}
                     alt="green iguana"
                 />
                 <CardContent>
