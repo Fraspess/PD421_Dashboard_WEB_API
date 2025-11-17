@@ -52,10 +52,5 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Storage
         }
 
 
-        public async Task<string> GetImageUrlByFileName(string imageName)
-        {
-            var imageUrl = await _blobStorageService.GetUrlByFileName(StaticFilesSettings.ImagesContainerName,imageName);
-            return imageUrl;
-        }
     }
 }

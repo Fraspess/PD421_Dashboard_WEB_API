@@ -97,17 +97,5 @@ namespace PD421_Dashboard_WEB_API.Controllers
             return this.ToActionResult(response);
         }
 
-        [HttpGet]
-        [Route("image/ByFileName")]
-        public async Task<IActionResult> GetImageUrlByFileName(string? fileName)
-        {
-            if (String.IsNullOrEmpty(fileName))
-            {
-                var responseV = new ServiceResponse { Message = "Назва картинки не вказана!", IsSuccess = false, HttpStatusCode = HttpStatusCode.BadRequest };
-                return this.ToActionResult(responseV);
-            }
-            var response = await _gameService.GetImageUrlByFileName(fileName);
-            return this.ToActionResult(response);
-        }
     }
     }

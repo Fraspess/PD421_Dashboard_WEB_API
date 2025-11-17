@@ -43,16 +43,5 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.BlobStorage
             await blob.DeleteIfExistsAsync();
         }
 
-
-        public async Task<string> GetUrlByFileName(string containerName, string filePath)
-        {
-            var containerClient = _serviceClient.GetBlobContainerClient(containerName);
-            var blob = containerClient.GetBlobClient(filePath);
-            if(await blob.ExistsAsync())
-            {
-                return blob.Uri.ToString();
-            }
-            return "";
-        }
     }
 }

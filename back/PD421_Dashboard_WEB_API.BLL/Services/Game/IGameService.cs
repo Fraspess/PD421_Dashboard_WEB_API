@@ -15,6 +15,5 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
         Task<ServiceResponse>? GetGameByIdAsync(string id);
         Task<ServiceResponse> GetAllGamesAsync();
         Task<ServiceResponse> GetGamesByGenreAsync(string genreName);
-        Task<ServiceResponse> GetImageUrlByFileName(string fileName);
     }
 }

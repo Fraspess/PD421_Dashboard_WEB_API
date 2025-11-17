@@ -165,15 +165,6 @@ namespace PD421_Dashboard_WEB_API.BLL.Services.Game
             };
         }
 
-        public async Task<ServiceResponse> GetImageUrlByFileName(string fileName)
-        {
-            var imageUrl = await _storageService.GetImageUrlByFileName(fileName);
-            if (String.IsNullOrWhiteSpace(imageUrl))
-            {
-                return new ServiceResponse { Message = "Картинку не знайдено!", IsSuccess = false, HttpStatusCode = HttpStatusCode.NotFound };
-            }
-            return new ServiceResponse { Message = "Картинку знайдено!", IsSuccess = true, HttpStatusCode = HttpStatusCode.OK, Data = imageUrl };
-        }
 
         public async Task<ServiceResponse> UpdateGameAsync(UpdateGameDto dto)
         {
