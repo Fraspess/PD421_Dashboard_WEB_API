@@ -1,6 +1,7 @@
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PD421_Dashboard_WEB_API.BLL.Services.Auth;
 using PD421_Dashboard_WEB_API.BLL.Services.BlobStorage;
@@ -14,7 +15,7 @@ using PD421_Dashboard_WEB_API.DAL.Entitites.Identity;
 using PD421_Dashboard_WEB_API.DAL.Initializer;
 using PD421_Dashboard_WEB_API.DAL.Repositories.Game;
 using PD421_Dashboard_WEB_API.DAL.Repositories.Genre;
-using PD421_Dashboard_WEB_API.Infrastructure;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +29,21 @@ builder.Services.AddSwaggerGen();
 // Add dbcontext
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultDb"));
+    var secretKeysVault = builder.Configuration.GetConnectionString("SecretKeysVault");
+    var client = new SecretClient(new Uri(secretKeysVault), new DefaultAzureCredential());
+    var response = client.GetSecret("AzureDb");
+    if(response.GetRawResponse().Status == 200)
+    {
+        var secret = response.Value;
+        if (secret.Value == "Test")
+        {
+            options.UseNpgsql("User ID=postgres;Password=2010;Host=localhost;Port=5432;Database=pd421-games-store");
+        }
+        else
+        {
+            options.UseNpgsql(secret.Value);
+        }
+    }
 });
 
 // Add identity
@@ -64,9 +79,17 @@ builder.Services.AddScoped<IRegisterService, RegisterService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>(provider =>
 {
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    string connectionString = configuration.GetConnectionString("BlobStorage");
-    return new BlobStorageService(connectionString);
+    //var configuration = provider.GetRequiredService<IConfiguration>();
+    string secretKeysVault = builder.Configuration.GetConnectionString("SecretKeysVault");
+    var client = new SecretClient(new Uri(secretKeysVault), new DefaultAzureCredential());
+    var response = client.GetSecret("BlobStorageConnectionString");
+    if(response.GetRawResponse().Status == 200)
+    {
+        var secret = response.Value;
+        return new BlobStorageService(secret.Value);
+    }
+    throw new ArgumentException("CANT GET SECRET KEY");
+
 });
 // Add settings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
